@@ -35,6 +35,7 @@ public class MainActivity extends AppCompatActivity { //一番最初の画面の
         setContentView(R.layout.activity_main);
         // "/data" + MyApplication.getMyAppContext().getFilesDir().getPath() + "/input.csv"で内部ストレージのパスを指定すると、
         // なぜか /user/0/ の文言が挟まってうまく指定できない
+        //ddd
 
         //これいらない
         File exFile = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS) + "/exFile.csv");
