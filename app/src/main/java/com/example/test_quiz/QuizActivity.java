@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
@@ -21,6 +22,8 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.json.JSONArray;
+import org.json.JSONException;
 import org.w3c.dom.Text;
 
 import java.io.BufferedReader;
@@ -36,8 +39,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Random;
 import android.os.Handler;
+import org.json.JSONObject;
 
 public class QuizActivity extends AppCompatActivity { //クイズ出題画面のアクティビティー
 
@@ -51,6 +56,11 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
     private TextView pseudonymText;
     private TextView memberText;
     private TextView nowNumberText;
+    private JSONArray quizData;
+    private int key;
+    private int max_num;
+    private String image_common_dir = "http://quiz.takbazinga.com/images/";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,10 +73,36 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
         memberText = findViewById(R.id.memberText);
         nowNumberText = findViewById(R.id.nowNumberText);
 
+
+        //shared preferenceでなんとかできないか
         File tagConfig = new File(getApplicationContext().getFilesDir(),"/tagConfig.txt"); //タグ設定ファイル
         ArrayList<String> tagList = new ArrayList<>();
         boolean isRandomFlag = false;
         boolean isRemoveNicheFlag = false;
+
+        String quiz_data = getIntent().getStringExtra("QUIZ_DATA");
+
+        Log.e("aaaaa", quiz_data);
+
+        //JSONObject quizData = new JSONObject();
+        //quizData = new JSONArray(quiz_data);
+        try {
+            quizData = new JSONArray(quiz_data);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        Log.e("afafaf", "###");
+        System.out.println(quizData);
+
+        //iteratorをセッ
+        key = 0;
+        max_num = quizData.length();
+
+        //System.out.println(quizs);
+//        JSONObject key = quizs.getJSONObject("1");
+//        System.out.println(key.getString("name"));
+//        System.out.println(quizs.keys());
 
         try{
             FileInputStream fis = new FileInputStream(tagConfig);
@@ -197,7 +233,19 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
             if(questionNum < requiredQuestionNum) requiredQuestionNum = questionNum;
             //TextView debugText2 = findViewById(R.id.debugText2);
             //debugText2.setText("questionNum:" + questionNum);
-            showQuiz();
+            //showQuiz();
+            JSONObject quiz = null;
+            try {
+                quiz = quizData.getJSONObject(key);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            try {
+                showImageFromWeb(image_common_dir + quiz.getString("photo1"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
         }
         TextView nowNumberText = findViewById(R.id.nowNumberText);
         nowNumberText.setText((nowQuizNum + 1) + "問目");
@@ -205,6 +253,8 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
     }
 
     public void nextQuizClick(View view){ //次の問題へボタンが押されたときの動作
+        //key = keys.next();
+        key++;
         if(nowQuizNum != (requiredQuestionNum - 1)){
             nowQuizNum++;
 
@@ -214,7 +264,18 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
             nowNumberText.setText((nowQuizNum + 1) + "問目");
             if(nowQuizNum == (requiredQuestionNum - 1)) nextQuizButton.setText("終了");
 
-            showQuiz();
+            //showQuiz();
+            JSONObject quiz = null;
+            try {
+                quiz = quizData.getJSONObject(key);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            try {
+                showImageFromWeb(image_common_dir + quiz.getString("photo1"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
 
         }else{ //終了時の処理
             LinearLayout layout = findViewById(R.id.quizActivityLayout);
@@ -248,6 +309,8 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
 
 
     public void beforeQuizClick(View view){ //前の問題へボタンが押されたときの動作
+        //key = keys.previous();
+        key--;
         if(nowQuizNum != 0){
             nowQuizNum--;
 
@@ -257,11 +320,84 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
             memberText.setText("");
             nowNumberText.setText((nowQuizNum + 1) + "問目");
 
-            showQuiz();
+            //showQuiz();
+            JSONObject quiz = null;
+            try {
+                quiz = quizData.getJSONObject(key);
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+            try {
+                showImageFromWeb(image_common_dir + quiz.getString("photo1"));
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     public void showQuiz(){
+        String url1 = "";
+
+        final Handler handler = new Handler();
+        ImageView questionImageView = findViewById(R.id.questionImage);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL( url1 );
+                    InputStream is = (InputStream)url.getContent();
+                    Drawable image = Drawable.createFromStream(is, "");
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            questionImageView.setImageDrawable(image);
+
+
+                        }
+                    });
+
+                    is.close();
+
+                } catch(Exception ex) {
+                    System.out.println(ex);
+                }
+            }
+        }).start();
+    }
+
+    public void showImageFromWeb(String image_path){
+        final Handler handler = new Handler();
+        ImageView questionImageView = findViewById(R.id.questionImage);
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    URL url = new URL( image_path );
+                    InputStream is = (InputStream)url.getContent();
+                    Drawable image = Drawable.createFromStream(is, "");
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            questionImageView.setImageDrawable(image);
+
+
+                        }
+                    });
+
+                    is.close();
+
+                } catch(Exception ex) {
+                    System.out.println(ex);
+                }
+            }
+        }).start();
+    }
+
+    public void __showQuiz(){
         //お気に入りの描画
         ImageButton favoriteButton = findViewById(R.id.favorite);
         if(quizList.get(nowQuizNum).get(7).contains("@@")) favoriteButton.setBackgroundResource(R.drawable.a_favorite);
@@ -308,11 +444,18 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
 //        async.execute(link);
     }
 
-    public void answerButtonClick(View view){ //答えを表示ボタンの動作
+    public void answerButtonClick(View view) throws JSONException { //答えを表示ボタンの動作
+        //ここにクイズ情報を入れていく
 
-        answerButton.setText(quizList.get(nowQuizNum).get(1));
-        pseudonymText.setText(quizList.get(nowQuizNum).get(2));
-        memberText.setText(quizList.get(nowQuizNum).get(3));
+        JSONObject quiz = quizData.getJSONObject(key);
+        answerButton.setText(quiz.getString("name"));
+        pseudonymText.setText(quiz.getString("wayToCall"));
+        memberText.setText(quiz.getString("company"));
+        showImageFromWeb(image_common_dir + quiz.getString("photo1"));
+
+//        answerButton.setText(quizList.get(nowQuizNum).get(1));
+//        pseudonymText.setText(quizList.get(nowQuizNum).get(2));
+//        memberText.setText(quizList.get(nowQuizNum).get(3));
     }
 
     public void favoriteButtonClick(View view){ //お気に入り登録ボタンの動作
@@ -389,19 +532,24 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
     } //ここまでお気に入り登録ボタンの動作
 
 
-    public void imageReloadButtonClick(View view){ //画像切り替えボタンの動作
+    public void imageReloadButtonClick(View view) throws JSONException { //画像切り替えボタンの動作
         ImageView questionImageView = findViewById(R.id.questionImage);
 
         String link;
+        String imgPath;
         if(randomNum == 0) { //画像の参照を反転させる
             link = quizList.get(nowQuizNum).get(5);
             randomNum = 1;
+            imgPath = quizData.getJSONObject(key).getString( "photo1");
         }else{
             link = quizList.get(nowQuizNum).get(4);
+            imgPath = quizData.getJSONObject(key).getString("photo2");
             randomNum = 0;
         }
         int id = getResources().getIdentifier(link,"drawable",getPackageName());
-        questionImageView.setImageResource(id);
+
+        showImageFromWeb(image_common_dir + imgPath);
+        //questionImageView.setImageResource(id);
         //最初drawableの下に他のフォルダを作って問題の画像を入れようとしたけど、drawableの下のフォルダは認識されないらしい
         //左のツリーにも表示されないし、getResources().getIdentifierの戻り値も0になった
 

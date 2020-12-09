@@ -3,8 +3,10 @@ package com.example.test_quiz;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
@@ -13,6 +15,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -20,9 +30,11 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 import java.util.ArrayList;
 
 public class SettingActivity extends AppCompatActivity {
@@ -57,6 +69,8 @@ public class SettingActivity extends AppCompatActivity {
     private String football_tag;
 
     private ArrayList<String> tags_array = new ArrayList<String>();
+    private String send_url_for_count;
+    private String send_url_for_info;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,6 +105,7 @@ public class SettingActivity extends AppCompatActivity {
 
         reflectOldConfig();
 
+        //何問だすかを選択5 ~ 30;
         Spinner spinner = findViewById(R.id.questionNumSpinner);
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -326,10 +341,12 @@ public class SettingActivity extends AppCompatActivity {
         System.out.println("fffff");
         System.out.println(tags_array);
 
-        String sendurl = createUrl();
-        System.out.println(sendurl);
-        TextView hitNumText = findViewById(R.id.numberOfHit);
-        hitNumText.setText(String.valueOf(hitNumberCheck(createTagList()))); //該当件数を表示
+        createUrl();
+        quizCount();
+
+//        TextView hitNumText = findViewById(R.id.numberOfHit);
+//        Log.e("タグ名", String.valueOf(hitNumberCheck(createTagList())));
+//        hitNumText.setText(String.valueOf(hitNumberCheck(createTagList()))); //該当件数を表示
     }
 
 
@@ -408,25 +425,106 @@ public class SettingActivity extends AppCompatActivity {
             }
         }
 
+        Spinner spinner = findViewById(R.id.questionNumSpinner);
+        String text = spinner.getSelectedItem().toString();
+        Log.e("spinner", text);
+
+        send_url_for_info += "&required_cnt=" + text;
+        Log.e("url", send_url_for_info);
+        JSONArray quiz_contents = quizInfo();
+
+        Log.e("cntents", quiz_contents.toString());
+
         Intent intent = new Intent(getApplicationContext(),QuizActivity.class);
+        intent.putExtra("QUIZ_DATA", quiz_contents.toString());
         startActivity(intent);
     }
 
-    public String createUrl(){
+    public void createUrl(){
         String[] tags = (String[]) tags_array.toArray(new String[tags_array.size()]);
-        String send_url = "http://quiz.takbazinga.com:8080/quiz/tag?";
+        send_url_for_count = "http://quiz.takbazinga.com:8080/quiz/tag/count?";
+        send_url_for_info = "http://quiz.takbazinga.com:8080/quiz/tag?";
         //String send_url = "http://quiz.takbazinga.com:8080/quiz/tag?tag_id[]=8&tag_id[]=9";
 
         int cnt = 0;
         for (String tag : tags) {
             if (cnt == 0){
-                send_url += "tag_id[]=" + tag;
+                send_url_for_count += "tag_id[]=" + tag;
+                send_url_for_info += "tag_id[]=" + tag;
             }else{
-                send_url += "&tag_id[]=" + tag;
+                send_url_for_count += "&tag_id[]=" + tag;
+                send_url_for_info += "&tag_id[]=" + tag;
             }
             cnt++;
         }
-        return send_url;
+
+    }
+
+    public JSONArray quizInfo(){
+        ThreadInfo thread_info = new ThreadInfo();
+        thread_info.setUrl(send_url_for_info);
+        thread_info.start();
+
+
+        while (true) {
+            try {
+                Thread.sleep(1000L);
+            } catch (InterruptedException e) {
+
+            }
+
+            // 処理が完了していたらループを抜ける
+            if (thread_info.finished()) {
+                break;
+            }
+        }
+
+        JSONArray result = thread_info.getResult();
+        return result;
+    }
+
+    public void quizCount(){
+
+        // メイン(UI)スレッドでHandlerのインスタンスを生成する
+        final Handler handler = new Handler();
+
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                try {
+
+                    //api version 23以上なら走らない
+                    HttpClient httpClient = new DefaultHttpClient();
+
+                    HttpGet httpGet = new HttpGet(send_url_for_count);
+                    HttpResponse httpResponse = httpClient.execute(httpGet);
+                    String quiz_cnt = EntityUtils.toString(httpResponse.getEntity(), "UTF-8");
+                    //System.out.println(str);
+
+                    // Handlerを使用してメイン(UI)スレッドに処理を依頼する
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+
+                            //メインスレッドで画像をセットする
+                            //questionImageView.setImageDrawable(image);
+                            //aaa = json;
+                            //System.out.println(aaa);
+
+                            TextView hitNumText = findViewById(R.id.numberOfHit);
+                            Log.e("タグ名", String.valueOf(hitNumberCheck(createTagList())));
+                            hitNumText.setText(quiz_cnt); //該当件数を表示
+
+                        }
+                    });
+
+
+
+                } catch(Exception ex) {
+
+                }
+            }
+        }).start();
     }
 
 
