@@ -69,8 +69,8 @@ public class SettingActivity extends AppCompatActivity {
     private String football_tag;
 
     private ArrayList<String> tags_array = new ArrayList<String>();
-    private String send_url_for_count;
-    private String send_url_for_info;
+    private String send_url_for_count = "http://quiz.takbazinga.com:8080/quiz/tag/count?tag_id[]=all";
+    private String send_url_for_info = "http://quiz.takbazinga.com:8080/quiz/tag?tag_id[]=all";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -342,6 +342,8 @@ public class SettingActivity extends AppCompatActivity {
         System.out.println(tags_array);
 
         createUrl();
+        Log.e("url", send_url_for_count);
+        Log.e("url1", send_url_for_info);
         quizCount();
 
 //        TextView hitNumText = findViewById(R.id.numberOfHit);
@@ -354,76 +356,76 @@ public class SettingActivity extends AppCompatActivity {
     public void startQuiz(View view){
 
         //File tagConfig = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).toString() + "/tagConfig.txt"); //デバッグのため外部へ
-        File tagConfig = new File(getApplicationContext().getFilesDir(),"/tagConfig.txt");
-        tagConfig.delete();
-        try{ //catch(Exception e)で大雑把にまとめて捕捉したら、こんなにtry-catchを書く必要はない でも一応
-            FileOutputStream fos = new FileOutputStream(tagConfig);
-            try{
-                OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
-                BufferedWriter bw = new BufferedWriter(osw);
-
-                try{
-                    bw.write("Num:" + questionNumStr + "\n");
-
-                    if(RandomCheckBox.isChecked()) bw.write("Ran:1\n");
-                    else bw.write("Ran:0\n");
-
-                    if(FavoriteCheckBox.isChecked()) bw.write("Fav:1\n");
-                    else bw.write("Fav:0\n");
-
-                    if(HumanCheckBox.isChecked()) bw.write("Hum:1\n");
-                    else bw.write("Hum:0\n");
-
-                    if(AnimeCheckBox.isChecked()) bw.write("Ani:1\n");
-                    else bw.write("Ani:0\n");
-
-                    if(SingerCheckBox.isChecked()) bw.write("Sin:1\n");
-                    else bw.write("Sin:0\n");
-
-                    if(EntertainerCheckBox.isChecked()) bw.write("Ent:1\n");
-                    else bw.write("Ent:0\n");
-
-                    if(IdolCheckBox.isChecked()) bw.write("Ido:1\n");
-                    else bw.write("Ido:0\n");
-
-                    if(AthleteCheckBox.isChecked()) bw.write("Ath:1\n");
-                    else bw.write("Ath:0\n");
-
-                    if(RemoveNicheCheckBox.isChecked()) bw.write("RNi:1\n");
-                    else bw.write("RNi:0\n");
-
-                    if(OnlyNicheCheckBox.isChecked()) bw.write("ONi:1\n");
-                    else bw.write("ONi:0\n");
-
-                    if(BaseballCheckBox.isChecked()) bw.write("Bse:1\n");
-                    else bw.write("Bse:0\n");
-
-                    if(FootballCheckBox.isChecked()) bw.write("Fot:1\n");
-                    else bw.write("Fot:0\n");
-
-                    bw.flush();
-                    osw.close();
-                    bw.close();
-
-                }catch (IOException e){
-                    Log.e("Buffered Writer ERROR:",e.getMessage());
-                }
-                fos.close();
-
-            }catch(UnsupportedEncodingException e){
-                Log.e("Encoding ERROR:",e.getMessage());
-            }catch (IOException e2){
-                Log.e("fos close IO ERROR:",e2.getMessage());
-            }
-
-        }catch(FileNotFoundException e){ //FileOutputStreamのチェック例外
-            Log.e("File not found ERROR:",e.getMessage());
-            try{
-                tagConfig.createNewFile();
-            }catch(IOException e2){
-                Log.e("createNewFile ERROR:",e2.getMessage());
-            }
-        }
+//        File tagConfig = new File(getApplicationContext().getFilesDir(),"/tagConfig.txt");
+//        tagConfig.delete();
+//        try{ //catch(Exception e)で大雑把にまとめて捕捉したら、こんなにtry-catchを書く必要はない でも一応
+//            FileOutputStream fos = new FileOutputStream(tagConfig);
+//            try{
+//                OutputStreamWriter osw = new OutputStreamWriter(fos,"UTF-8");
+//                BufferedWriter bw = new BufferedWriter(osw);
+//
+//                try{
+//                    bw.write("Num:" + questionNumStr + "\n");
+//
+//                    if(RandomCheckBox.isChecked()) bw.write("Ran:1\n");
+//                    else bw.write("Ran:0\n");
+//
+//                    if(FavoriteCheckBox.isChecked()) bw.write("Fav:1\n");
+//                    else bw.write("Fav:0\n");
+//
+//                    if(HumanCheckBox.isChecked()) bw.write("Hum:1\n");
+//                    else bw.write("Hum:0\n");
+//
+//                    if(AnimeCheckBox.isChecked()) bw.write("Ani:1\n");
+//                    else bw.write("Ani:0\n");
+//
+//                    if(SingerCheckBox.isChecked()) bw.write("Sin:1\n");
+//                    else bw.write("Sin:0\n");
+//
+//                    if(EntertainerCheckBox.isChecked()) bw.write("Ent:1\n");
+//                    else bw.write("Ent:0\n");
+//
+//                    if(IdolCheckBox.isChecked()) bw.write("Ido:1\n");
+//                    else bw.write("Ido:0\n");
+//
+//                    if(AthleteCheckBox.isChecked()) bw.write("Ath:1\n");
+//                    else bw.write("Ath:0\n");
+//
+//                    if(RemoveNicheCheckBox.isChecked()) bw.write("RNi:1\n");
+//                    else bw.write("RNi:0\n");
+//
+//                    if(OnlyNicheCheckBox.isChecked()) bw.write("ONi:1\n");
+//                    else bw.write("ONi:0\n");
+//
+//                    if(BaseballCheckBox.isChecked()) bw.write("Bse:1\n");
+//                    else bw.write("Bse:0\n");
+//
+//                    if(FootballCheckBox.isChecked()) bw.write("Fot:1\n");
+//                    else bw.write("Fot:0\n");
+//
+//                    bw.flush();
+//                    osw.close();
+//                    bw.close();
+//
+//                }catch (IOException e){
+//                    Log.e("Buffered Writer ERROR:",e.getMessage());
+//                }
+//                fos.close();
+//
+//            }catch(UnsupportedEncodingException e){
+//                Log.e("Encoding ERROR:",e.getMessage());
+//            }catch (IOException e2){
+//                Log.e("fos close IO ERROR:",e2.getMessage());
+//            }
+//
+//        }catch(FileNotFoundException e){ //FileOutputStreamのチェック例外
+//            Log.e("File not found ERROR:",e.getMessage());
+//            try{
+//                tagConfig.createNewFile();
+//            }catch(IOException e2){
+//                Log.e("createNewFile ERROR:",e2.getMessage());
+//            }
+//        }
 
         Spinner spinner = findViewById(R.id.questionNumSpinner);
         String text = spinner.getSelectedItem().toString();

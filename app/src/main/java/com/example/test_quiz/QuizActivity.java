@@ -311,6 +311,10 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
     public void beforeQuizClick(View view){ //前の問題へボタンが押されたときの動作
         //key = keys.previous();
         key--;
+        if (key < 0){
+            key = 0;
+        }
+
         if(nowQuizNum != 0){
             nowQuizNum--;
 
