@@ -72,6 +72,7 @@ public class SettingActivity extends AppCompatActivity {
     private String send_url_for_count;
     private String send_url_for_info;
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,7 +104,7 @@ public class SettingActivity extends AppCompatActivity {
         football_tag = ((TextView)findViewById(R.id.football_hidden)).getText().toString();
 
 
-        reflectOldConfig();
+        //reflectOldConfig();
 
         //何問だすかを選択5 ~ 30;
         Spinner spinner = findViewById(R.id.questionNumSpinner);
@@ -466,12 +467,13 @@ public class SettingActivity extends AppCompatActivity {
         thread_info.start();
 
 
+        // if you wait few seconds and don't have any response, it break;
         while (true) {
-            try {
-                Thread.sleep(1000L);
-            } catch (InterruptedException e) {
-
-            }
+//            try {
+//                Thread.sleep(1000L);
+//            } catch (InterruptedException e) {
+//
+//            }
 
             // 処理が完了していたらループを抜ける
             if (thread_info.finished()) {
@@ -493,7 +495,7 @@ public class SettingActivity extends AppCompatActivity {
             public void run() {
                 try {
 
-                    //api version 23以上なら走らない
+                    //api version 23以下なら走らない
                     HttpClient httpClient = new DefaultHttpClient();
 
                     HttpGet httpGet = new HttpGet(send_url_for_count);

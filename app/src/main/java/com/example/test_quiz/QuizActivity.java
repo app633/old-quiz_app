@@ -80,160 +80,47 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
         boolean isRandomFlag = false;
         boolean isRemoveNicheFlag = false;
 
+
+
+
+        //------------start----------------
         String quiz_data = getIntent().getStringExtra("QUIZ_DATA");
 
-        Log.e("aaaaa", quiz_data);
-
-        //JSONObject quizData = new JSONObject();
-        //quizData = new JSONArray(quiz_data);
         try {
             quizData = new JSONArray(quiz_data);
 
         } catch (JSONException e) {
             e.printStackTrace();
         }
-        Log.e("afafaf", "###");
-        System.out.println(quizData);
-
-        //iteratorをセッ
         key = 0;
         max_num = quizData.length();
-
-        //System.out.println(quizs);
-//        JSONObject key = quizs.getJSONObject("1");
-//        System.out.println(key.getString("name"));
-//        System.out.println(quizs.keys());
-
-        try{
-            FileInputStream fis = new FileInputStream(tagConfig);
-            InputStreamReader isr = new InputStreamReader(fis,"UTF-8");
-            BufferedReader br = new BufferedReader(isr);
-            String tmp;
-
-            while((tmp = br.readLine()) != null){
-                if(tmp.contains("Num")) {
-                    requiredQuestionNum = Integer.parseInt(tmp.substring(4));
-                }
-
-                if(tmp.contains("Ram")) {
-                    if((int)(tmp.charAt(4)) == 49) isRandomFlag = true;
-                }
-
-                if(tmp.contains("Fav")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("@@");
-                }
-
-                if(tmp.contains("Hum")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("人物");
-                }
-
-                if(tmp.contains("Ani")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("アニメ");
-                }
-
-                if(tmp.contains("Sin")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("歌手");
-                }
-
-                if(tmp.contains("Ent")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("芸人");
-                }
-
-                if(tmp.contains("Ido")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("アイドル");
-                }
-
-                if(tmp.contains("Ath")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("スポーツ選手");
-                }
-
-                if(tmp.contains("ONi")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("ニッチ");
-                }
-
-                if(tmp.contains("RNi")){
-                    if((int)(tmp.charAt(4)) == 49) isRemoveNicheFlag = true;
-                }
-
-                if(tmp.contains("Bse")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("野球");
-                }
-
-                if(tmp.contains("Fot")) {
-                    if((int)(tmp.charAt(4)) == 49) tagList.add("サッカー");
-                }
-            }
-            fis.close();
-            isr.close();
-            br.close();
-        }catch(Exception e){
-            Log.e("tagConfig read ERROR:",e.getMessage());
-            Toast.makeText(getApplicationContext(),"tagConfig read ERROR",Toast.LENGTH_LONG).show();
-        }
+        //------------end----------------
 
 
-        File inputFile = new File(MyApplication.getMyAppContext().getFilesDir(),"/input.csv"); //内部ストレージ
+
+        //File inputFile = new File(MyApplication.getMyAppContext().getFilesDir(),"/input.csv"); //内部ストレージ
         //Log.e("path",MyApplication.getMyAppContext().getFilesDir().getPath());
         //File inputFile = new File(getExternalFilesDir(Environment.DIRECTORY_DOCUMENTS).toString() + "/input.csv");
         int questionNum = 0;
 
-        try{
-            InputStreamReader isr = new InputStreamReader(new FileInputStream(inputFile),"SHIFT-JIS");
-            BufferedReader br = new BufferedReader(isr);
 
-            String tmp;
-            boolean tagFlag;
-            br.readLine(); br.readLine(); //2行読み飛ばす
-            while((tmp = br.readLine()) != null){
-                tagFlag = true;
-                if (!isRandomFlag) {
-                    if(isRemoveNicheFlag) {
-                        if(tmp.contains("ニッチ")) tagFlag = false;
-                    }
-                    for (String str : tagList) {
+        //System.out.println(questionNum);
+        questionNum = max_num;
+        System.out.println("hello. world");
+        System.out.println(questionNum);
 
-                        tagFlag = tagFlag && (tmp.contains(str)); //該当タグが全て含まれているかどうかを論理積を全てで取ることで判定する
-                    }
-                }
+        //Toast.makeText(getApplicationContext(),"該当問題が存在しません",Toast.LENGTH_LONG).show();
 
-                if(tagFlag) {
-                    ArrayList<String> tmpArray = new ArrayList<>();
-                    int startNum = 0;
-                    int endNum;
-                    while ((endNum = tmp.indexOf(",", startNum)) != -1) { //","が見つからなくなるまで
-                        String separatedStr = tmp.substring(startNum, endNum);
-                        tmpArray.add(separatedStr);
-                        startNum = endNum + 1;
-                    }
-                    tmpArray.add(tmp.substring(startNum));
-                    quizList.add(tmpArray);
-                    questionNum++;
-                }
-            }
-            isr.close();
-            br.close();
-
-        }catch(Exception e){
-            AlertDialog.Builder inAlert = new AlertDialog.Builder(this);
-            inAlert.setTitle("クイズのリスト読み込みエラー \n" + e.toString());
-            inAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-
-                }
-            });
-            inAlert.setCancelable(false);
-            inAlert.show();
-        }
-
-        if(questionNum == 0 || quizList.size() == 0){
+        if(questionNum == 0){
             Toast.makeText(getApplicationContext(),"該当問題が存在しません",Toast.LENGTH_LONG).show();
         }else{
-            Collections.shuffle(quizList);
+            //Collections.shuffle(quizList);
             if(questionNum < requiredQuestionNum) requiredQuestionNum = questionNum;
             //TextView debugText2 = findViewById(R.id.debugText2);
             //debugText2.setText("questionNum:" + questionNum);
             //showQuiz();
+
+            //--------------start--------------
             JSONObject quiz = null;
             try {
                 quiz = quizData.getJSONObject(key);
@@ -245,6 +132,8 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+
+            //--------------end--------------
 
         }
         TextView nowNumberText = findViewById(R.id.nowNumberText);
@@ -264,7 +153,7 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
             nowNumberText.setText((nowQuizNum + 1) + "問目");
             if(nowQuizNum == (requiredQuestionNum - 1)) nextQuizButton.setText("終了");
 
-            //showQuiz();
+            //------------start----------------
             JSONObject quiz = null;
             try {
                 quiz = quizData.getJSONObject(key);
@@ -276,6 +165,7 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            //------------end----------------
 
         }else{ //終了時の処理
             LinearLayout layout = findViewById(R.id.quizActivityLayout);
@@ -320,7 +210,7 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
             memberText.setText("");
             nowNumberText.setText((nowQuizNum + 1) + "問目");
 
-            //showQuiz();
+            //------------start----------------
             JSONObject quiz = null;
             try {
                 quiz = quizData.getJSONObject(key);
@@ -332,6 +222,7 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
             } catch (JSONException e) {
                 e.printStackTrace();
             }
+            //------------end----------------
         }
     }
 
@@ -383,7 +274,6 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
                         @Override
                         public void run() {
                             questionImageView.setImageDrawable(image);
-
 
                         }
                     });
@@ -451,7 +341,7 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
         answerButton.setText(quiz.getString("name"));
         pseudonymText.setText(quiz.getString("wayToCall"));
         memberText.setText(quiz.getString("company"));
-        showImageFromWeb(image_common_dir + quiz.getString("photo1"));
+        //showImageFromWeb(image_common_dir + quiz.getString("photo1"));
 
 //        answerButton.setText(quizList.get(nowQuizNum).get(1));
 //        pseudonymText.setText(quizList.get(nowQuizNum).get(2));
@@ -535,35 +425,35 @@ public class QuizActivity extends AppCompatActivity { //クイズ出題画面の
     public void imageReloadButtonClick(View view) throws JSONException { //画像切り替えボタンの動作
         ImageView questionImageView = findViewById(R.id.questionImage);
 
+        JSONObject quiz = null;
+        try {
+            quiz = quizData.getJSONObject(key);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+
+
         String link;
         String imgPath;
         if(randomNum == 0) { //画像の参照を反転させる
-            link = quizList.get(nowQuizNum).get(5);
+            //link = quizList.get(nowQuizNum).get(5);
             randomNum = 1;
-            imgPath = quizData.getJSONObject(key).getString( "photo1");
+            imgPath = quiz.getString("photo1");
+            //imgPath = quizData.getJSONObject(key).getString( "photo1");
         }else{
-            link = quizList.get(nowQuizNum).get(4);
-            imgPath = quizData.getJSONObject(key).getString("photo2");
+            //link = quizList.get(nowQuizNum).get(4);
+            //imgPath = quizData.getJSONObject(key).getString("photo2");
             randomNum = 0;
+            imgPath = quiz.getString("photo2");
         }
-        int id = getResources().getIdentifier(link,"drawable",getPackageName());
+        //int id = getResources().getIdentifier(link,"drawable",getPackageName());
 
         showImageFromWeb(image_common_dir + imgPath);
         //questionImageView.setImageResource(id);
         //最初drawableの下に他のフォルダを作って問題の画像を入れようとしたけど、drawableの下のフォルダは認識されないらしい
         //左のツリーにも表示されないし、getResources().getIdentifierの戻り値も0になった
 
-        if(id == 0) { //リソースフォルダに画像がなかった場合、外部ストレージから探す
-            String path = getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/" + quizList.get(nowQuizNum).get(4) + ".jpg";
-            //String path =
-            //Log.e("path",path);
-            Bitmap bmp = BitmapFactory.decodeFile(path);
-            if(bmp == null){
-                path = MyApplication.getMyAppContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES) + "/" +quizList.get(nowQuizNum).get(4) + ".png";
-                bmp = BitmapFactory.decodeFile(path);
-            }
-            questionImageView.setImageBitmap(bmp);
-        }
+
     }
 
 
